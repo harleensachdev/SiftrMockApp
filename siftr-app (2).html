@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Siftr</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  font-family: 'Instrument Sans', sans-serif;
+  background: #0a0a0a;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root {
+  --forest: #2C5F2E;
+  --forest-dark: #1A3D1C;
+  --forest-light: #3B7A3E;
+  --forest-pale: #EAF2EA;
+  --cream: #FAF7F2;
+  --cream-mid: #F2EDE4;
+  --brown: #2C1810;
+  --brown-light: #7A5C4A;
+  --brown-muted: #A08070;
+  --red: #B91C1C;
+  --red-pale: #FEE2E2;
+  --amber: #B45309;
+  --amber-pale: #FEF3C7;
+  --safe-bg: rgba(44,95,46,0.18);
+  --safe-border: rgba(44,95,46,0.75);
+  --avoid-bg: rgba(185,28,28,0.18);
+  --avoid-border: rgba(185,28,28,0.8);
+  --amber-bg: rgba(180,83,9,0.18);
+  --amber-border: rgba(180,83,9,0.8);
+}
+
+/* ── SCREEN SYSTEM ── */
+.screen {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  opacity: 0; transition: opacity 0.35s ease;
+}
+.screen.active { display: flex; }
+.screen.visible { opacity: 1; }
+
+/* ── SPLASH ── */
+#splash {
+  background: var(--brown);
+  align-items: center; justify-content: center;
+  gap: 12px;
+}
+.splash-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 56px; font-weight: 800;
+  color: var(--cream); letter-spacing: -2px;
+}
+.splash-logo span { color: #7BC87E; }
+.splash-tagline {
+  font-size: 14px; color: rgba(250,247,242,0.4);
+  letter-spacing: 0.05em; font-weight: 400;
+}
+.splash-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #7BC87E; margin-top: 32px;
+  animation: splashPulse 1.2s ease-in-out infinite;
+}
+@keyframes splashPulse {
+  0%,100% { opacity:0.3; transform:scale(1); }
+  50% { opacity:1; transform:scale(1.5); }
+}
+
+/* ── ONBOARDING ── */
+#onboarding {
+  background: var(--cream);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.onboard-header {
+  padding: 60px 28px 28px;
+  border-bottom: 1px solid rgba(44,24,16,0.08);
+  background: var(--cream);
+  position: sticky; top: 0; z-index: 10;
+}
+.onboard-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 24px; font-weight: 800;
+  color: var(--brown); letter-spacing: -0.5px;
+  margin-bottom: 24px;
+}
+.onboard-logo span { color: var(--forest); }
+.onboard-step {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--forest); margin-bottom: 8px;
+}
+.onboard-title {
+  font-family: 'Fraunces', serif;
+  font-size: 26px; font-weight: 800;
+  color: var(--brown); line-height: 1.1;
+  letter-spacing: -0.8px;
+}
+.onboard-title em { font-style: italic; color: var(--forest); }
+.onboard-sub {
+  margin-top: 8px; font-size: 14px;
+  color: var(--brown-light); line-height: 1.55;
+}
+
+.onboard-body { padding: 24px 28px; flex: 1; }
+
+.restriction-group { margin-bottom: 28px; }
+.group-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--brown-muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.group-label::after { content: ''; flex: 1; height: 1px; background: rgba(44,24,16,0.1); }
+
+.restriction-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.restriction-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 14px; border-radius: 10px;
+  border: 1.5px solid rgba(44,24,16,0.1);
+  background: white; cursor: pointer;
+  transition: all 0.15s ease; user-select: none;
+}
+.restriction-chip.selected {
+  border-color: var(--forest);
+  background: var(--forest-pale);
+}
+.chip-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: rgba(44,24,16,0.05);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.15s;
+}
+.restriction-chip.selected .chip-icon { background: rgba(44,95,46,0.12); }
+.chip-icon svg { width: 16px; height: 16px; stroke: var(--brown-light); }
+.restriction-chip.selected .chip-icon svg { stroke: var(--forest); }
+
+.chip-label {
+  font-size: 13px; font-weight: 500;
+  color: var(--brown); line-height: 1.2; flex: 1;
+}
+.restriction-chip.selected .chip-label { color: var(--forest-dark); font-weight: 600; }
+
+.chip-check {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid rgba(44,24,16,0.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.15s;
+}
+.restriction-chip.selected .chip-check {
+  background: var(--forest); border-color: var(--forest);
+}
+.chip-check .check-svg { display: none; }
+.restriction-chip.selected .chip-check .check-svg { display: block; }
+
+.onboard-footer {
+  padding: 16px 28px 48px;
+  background: var(--cream);
+  border-top: 1px solid rgba(44,24,16,0.07);
+}
+.btn-full {
+  width: 100%; padding: 17px;
+  background: var(--forest); color: white;
+  border: none; border-radius: 12px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, transform 0.12s;
+  box-shadow: 0 4px 16px rgba(44,95,46,0.25);
+}
+.btn-full:active { transform: scale(0.98); background: var(--forest-dark); }
+.btn-full:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+.onboard-note {
+  margin-top: 11px; text-align: center;
+  font-size: 12px; color: var(--brown-muted);
+}
+
+/* ── SCANNER ── */
+#scanner { background: #000; position: relative; overflow: hidden; }
+
+#cameraFeed {
+  position: absolute;
+  /* On mobile this fills the screen naturally.
+     On desktop we centre it so it doesn't sit at the top */
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  top: 0; left: 0;
+}
+
+.scanner-ui {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.scanner-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 52px 22px 18px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+.scanner-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 800;
+  color: white; letter-spacing: -0.5px;
+}
+.scanner-logo span { color: #7BC87E; }
+.profile-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 100px; padding: 6px 12px;
+  font-size: 12px; font-weight: 600; color: white;
+}
+.profile-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #7BC87E;
+}
+
+/* viewfinder */
+.viewfinder {
+  position: absolute;
+  /* centred in the available space between topbar and bottom controls */
+  top: 50%; left: 50%;
+  transform: translate(-50%, -54%);
+  width: 88%; max-width: 480px;
+  aspect-ratio: 4/3;
+  pointer-events: none;
+}
+.vf-corner {
+  position: absolute; width: 24px; height: 24px;
+  border-color: rgba(255,255,255,0.85); border-style: solid;
+}
+.vf-corner.tl { top:0; left:0; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+.vf-corner.tr { top:0; right:0; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+.vf-corner.bl { bottom:0; left:0; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+.vf-corner.br { bottom:0; right:0; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+.scan-line {
+  position: absolute; left: 1px; right: 1px; height: 2px;
+  background: linear-gradient(to right, transparent 0%, rgba(44,200,80,0.9) 40%, rgba(44,200,80,0.9) 60%, transparent 100%);
+  animation: scanMove 2.4s ease-in-out infinite;
+}
+@keyframes scanMove {
+  0%   { top: 1px; opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { top: calc(100% - 2px); opacity: 0; }
+}
+.scan-hint {
+  position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; color: rgba(255,255,255,0.55);
+  white-space: nowrap; letter-spacing: 0.04em;
+}
+
+.scanner-bottom {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+  padding: 16px 28px 50px;
+  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+}
+.scanner-bottom-row {
+  width: 100%; display: flex;
+  align-items: center; justify-content: space-between;
+  max-width: 320px;
+}
+.capture-btn {
+  width: 74px; height: 74px; border-radius: 50%;
+  background: white;
+  border: 4px solid rgba(255,255,255,0.35);
+  cursor: pointer; outline: none;
+  transition: transform 0.12s;
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+.capture-btn::after {
+  content: ''; position: absolute; inset: 5px;
+  border-radius: 50%; background: white;
+}
+.capture-btn:active { transform: scale(0.9); }
+
+.scanner-side-btn {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s;
+}
+.scanner-side-btn:active { background: rgba(255,255,255,0.2); }
+.scanner-side-btn svg { width: 18px; height: 18px; stroke: white; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+.capture-label {
+  font-size: 11px; color: rgba(255,255,255,0.45);
+  letter-spacing: 0.07em; text-transform: uppercase;
+}
+
+/* cam error */
+.cam-error {
+  position: absolute; inset: 0; z-index: 5;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px; text-align: center; padding: 48px;
+  background: #111;
+}
+.cam-error.show { display: flex; }
+.cam-error svg { width: 48px; height: 48px; stroke: rgba(255,255,255,0.3); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.cam-error h3 { font-size: 18px; font-weight: 700; color: white; }
+.cam-error p { font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.65; }
+
+/* ── RESULTS ── */
+#results { background: #000; position: relative; overflow: hidden; }
+
+#frozenFrame {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  object-position: center center;
+}
+
+.bbox-layer { position: absolute; inset: 0; z-index: 5; }
+
+.bbox {
+  position: absolute; border-radius: 5px;
+  border-width: 2px; border-style: solid;
+  cursor: pointer; transition: opacity 0.15s;
+  animation: bboxReveal 0.35s ease both;
+}
+.bbox.safe   { border-color: var(--safe-border);  background: var(--safe-bg); }
+.bbox.avoid  { border-color: var(--avoid-border); background: var(--avoid-bg); }
+.bbox.amber  { border-color: var(--amber-border); background: var(--amber-bg); }
+.bbox.grey   { border-color: rgba(156,163,175,0.7); background: rgba(156,163,175,0.1); }
+.bbox:active { opacity: 0.75; }
+
+@keyframes bboxReveal {
+  from { opacity:0; transform: scale(0.94); }
+  to   { opacity:1; transform: scale(1); }
+}
+
+.bbox-label {
+  position: absolute; top: -1px; left: -1px;
+  padding: 3px 8px;
+  border-radius: 3px 0 5px 0;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 3px;
+  white-space: nowrap; line-height: 1;
+}
+.bbox.safe  .bbox-label { background: var(--safe-border);  color: white; }
+.bbox.avoid .bbox-label { background: var(--avoid-border); color: white; }
+.bbox.amber .bbox-label { background: var(--amber-border); color: white; }
+.bbox.grey  .bbox-label { background: rgba(100,110,120,0.85); color: white; }
+
+.bbox-name {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 3px 6px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 0 0 3px 3px;
+  font-size: 9px; font-weight: 600; color: white;
+  text-align: center; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  letter-spacing: 0.02em;
+}
+
+.results-ui {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  justify-content: space-between; pointer-events: none;
+}
+.results-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 52px 22px 18px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, transparent 100%);
+  pointer-events: all;
+}
+.results-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 800;
+  color: white; letter-spacing: -0.5px;
+}
+.results-logo span { color: #7BC87E; }
+.results-summary { display: flex; gap: 6px; }
+.summary-chip {
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 700;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.summary-chip.safe  { background: rgba(44,95,46,0.8);  color: white; }
+.summary-chip.avoid { background: rgba(185,28,28,0.8); color: white; }
+.summary-chip.amber { background: rgba(180,83,9,0.8);  color: white; }
+
+.tap-hint {
+  position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; color: rgba(255,255,255,0.6);
+  background: rgba(0,0,0,0.45); padding: 6px 16px; border-radius: 100px;
+  backdrop-filter: blur(4px); pointer-events: none;
+  letter-spacing: 0.03em; white-space: nowrap;
+  animation: fadeHint 3.5s ease 2s forwards;
+}
+@keyframes fadeHint { to { opacity: 0; } }
+
+.results-bottom {
+  padding: 16px 22px 48px;
+  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+  pointer-events: all;
+}
+.rescan-btn {
+  width: 100%; padding: 16px;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 15px; font-weight: 600; color: white;
+  cursor: pointer; transition: background 0.18s;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+}
+.rescan-btn svg { width: 16px; height: 16px; stroke: white; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.rescan-btn:active { background: rgba(255,255,255,0.2); }
+
+/* capture flash */
+.capture-flash {
+  position: fixed; inset: 0; background: white;
+  z-index: 9999; pointer-events: none;
+  animation: flash 0.45s ease forwards;
+}
+@keyframes flash { 0% { opacity:1; } 100% { opacity:0; } }
+
+/* ── PROCESSING OVERLAY ── */
+.processing-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.82);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 18px;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.processing-overlay.show { opacity: 1; pointer-events: all; }
+.processing-ring {
+  width: 54px; height: 54px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: #7BC87E;
+  animation: spin 0.85s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.processing-label { font-size: 15px; color: rgba(255,255,255,0.8); font-weight: 600; }
+.processing-sub { font-size: 12px; color: rgba(255,255,255,0.35); letter-spacing: 0.03em; }
+
+/* ── PRODUCT SHEET ── */
+.sheet-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0); pointer-events: none;
+  transition: background 0.3s;
+}
+.sheet-overlay.open { background: rgba(0,0,0,0.52); pointer-events: all; }
+
+.product-sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--cream); border-radius: 20px 20px 0 0;
+  max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
+  padding-bottom: 36px;
+}
+.sheet-overlay.open .product-sheet { transform: translateY(0); }
+
+.sheet-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: rgba(44,24,16,0.15); margin: 14px auto 0;
+}
+
+.sheet-header { padding: 20px 24px 0; }
+
+.verdict-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: 10px; margin-bottom: 20px;
+}
+.verdict-banner.safe  { background: var(--forest-pale); border: 1px solid rgba(44,95,46,0.2); }
+.verdict-banner.avoid { background: var(--red-pale);    border: 1px solid rgba(185,28,28,0.2); }
+.verdict-banner.amber { background: var(--amber-pale);  border: 1px solid rgba(180,83,9,0.2); }
+
+.verdict-icon {
+  width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.verdict-icon svg { width: 20px; height: 20px; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.verdict-banner.safe  .verdict-icon { background: rgba(44,95,46,0.14); }
+.verdict-banner.safe  .verdict-icon svg { stroke: var(--forest); }
+.verdict-banner.avoid .verdict-icon { background: rgba(185,28,28,0.12); }
+.verdict-banner.avoid .verdict-icon svg { stroke: var(--red); }
+.verdict-banner.amber .verdict-icon { background: rgba(180,83,9,0.12); }
+.verdict-banner.amber .verdict-icon svg { stroke: var(--amber); }
+
+.verdict-text strong {
+  display: block; font-size: 14px; font-weight: 700; line-height: 1.3;
+}
+.verdict-banner.safe  .verdict-text strong { color: var(--forest-dark); }
+.verdict-banner.avoid .verdict-text strong { color: var(--red); }
+.verdict-banner.amber .verdict-text strong { color: var(--amber); }
+.verdict-text span { font-size: 12px; color: var(--brown-light); }
+
+.product-name-row {
+  display: flex; align-items: flex-start; gap: 14px; margin-bottom: 4px;
+}
+.product-img-box {
+  width: 64px; height: 64px; border-radius: 10px;
+  background: var(--cream-mid); border: 1px solid rgba(44,24,16,0.1);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.product-img-box svg { width: 28px; height: 28px; stroke: var(--brown-muted); fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+
+.product-brand {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--brown-muted); margin-bottom: 4px;
+}
+.product-title {
+  font-family: 'Fraunces', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--brown); letter-spacing: -0.3px; line-height: 1.2;
+}
+.product-subtitle { font-size: 13px; color: var(--brown-light); margin-top: 3px; }
+
+.sheet-divider { height: 1px; background: rgba(44,24,16,0.08); margin: 20px 0; }
+
+.sheet-section { padding: 0 24px; margin-bottom: 20px; }
+.sheet-section-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--brown-muted); margin-bottom: 12px;
+}
+
+.allergen-flags { display: flex; flex-wrap: wrap; gap: 7px; }
+.allergen-flag {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 11px; border-radius: 6px;
+  font-size: 12px; font-weight: 600;
+}
+.allergen-flag svg { width: 12px; height: 12px; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.allergen-flag.present { background: var(--red-pale);    color: var(--red);         border: 1px solid rgba(185,28,28,0.18); }
+.allergen-flag.present svg { stroke: var(--red); }
+.allergen-flag.absent  { background: var(--forest-pale); color: var(--forest-dark); border: 1px solid rgba(44,95,46,0.15); }
+.allergen-flag.absent svg { stroke: var(--forest); }
+.allergen-flag.warning { background: var(--amber-pale);  color: var(--amber);       border: 1px solid rgba(180,83,9,0.18); }
+.allergen-flag.warning svg { stroke: var(--amber); }
+
+.ingredients-text {
+  font-size: 13px; color: var(--brown-light); line-height: 1.8;
+}
+.ingredients-text mark {
+  background: rgba(185,28,28,0.1); color: var(--red);
+  border-radius: 2px; padding: 0 2px; font-weight: 600;
+}
+
+.nutrition-table { width: 100%; border-collapse: collapse; }
+.nutrition-table tr { border-bottom: 1px solid rgba(44,24,16,0.07); }
+.nutrition-table tr:last-child { border-bottom: none; }
+.nutrition-table td { padding: 9px 0; font-size: 13px; color: var(--brown-light); }
+.nutrition-table td:last-child { text-align: right; font-weight: 600; color: var(--brown); }
+.nutrition-table .nt-bold td { font-weight: 600; color: var(--brown); border-top: 1px solid rgba(44,24,16,0.12); margin-top: 4px; }
+
+.sheet-close-wrap {
+  position: sticky; bottom: 0;
+  padding: 14px 24px 0;
+  background: linear-gradient(to top, var(--cream) 75%, transparent);
+}
+</style>
+</head>
+<body>
+
+<!-- ── SPLASH ── -->
+<div class="screen active" id="splash">
+  <div class="splash-logo">Siftr<span>.</span></div>
+  <div class="splash-tagline">Less label checking. More carefree shopping.</div>
+  <div class="splash-dot"></div>
+</div>
+
+<!-- ── ONBOARDING ── -->
+<div class="screen" id="onboarding">
+  <div class="onboard-header">
+    <div class="onboard-logo">Siftr<span>.</span></div>
+    <div class="onboard-step">Profile setup — Step 1 of 1</div>
+    <h1 class="onboard-title">What do you <em>need to avoid?</em></h1>
+    <p class="onboard-sub">Select all that apply. Stored on your device, never shared.</p>
+  </div>
+
+  <div class="onboard-body">
+    <!-- Medical -->
+    <div class="restriction-group">
+      <div class="group-label">Medical</div>
+      <div class="restriction-grid">
+
+        <div class="restriction-chip" data-id="gluten" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 3c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm4 12H8v-1c0-2 2.7-3 4-3s4 1 4 3v1z"/></svg></div>
+          <div class="chip-label">Gluten Free</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+        <div class="restriction-chip" data-id="nuts" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="7" ry="9"/><path d="M12 3v18M5.5 7.5l13 0M5.5 16.5l13 0"/></svg></div>
+          <div class="chip-label">Nut Allergy</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+        <div class="restriction-chip" data-id="dairy" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><path d="M8 2h8l2 6v12a1 1 0 01-1 1H7a1 1 0 01-1-1V8l2-6z"/><path d="M6 8h12"/></svg></div>
+          <div class="chip-label">Dairy Free</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+        <div class="restriction-chip" data-id="egg" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 7 5 12a7 7 0 0014 0c0-5-3-10-7-10z"/></svg></div>
+          <div class="chip-label">Egg Allergy</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+        <div class="restriction-chip" data-id="soy" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><path d="M12 2a9 9 0 100 18A9 9 0 0012 2z"/><path d="M12 6v6l4 2"/></svg></div>
+          <div class="chip-label">Soy Allergy</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+        <div class="restriction-chip" data-id="lowsugar" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+          <div class="chip-label">Low Sugar</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Lifestyle & Religious -->
+    <div class="restriction-group">
+      <div class="group-label">Lifestyle &amp; Religious</div>
+      <div class="restriction-grid">
+
+        <div class="restriction-chip" data-id="vegan" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 19.72A2 2 0 005.53 22h12.91a2 2 0 001.74-2.97C17.55 14.89 17 8 17 8z"/></svg></div>
+          <div class="chip-label">Vegan</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+        <div class="restriction-chip" data-id="vegetarian" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+          <div class="chip-label">Vegetarian</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+        <div class="restriction-chip" data-id="halal" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="chip-label">Halal</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+        <div class="restriction-chip" data-id="keto" onclick="toggleChip(this)">
+          <div class="chip-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <div class="chip-label">Keto</div>
+          <div class="chip-check"><svg class="check-svg" viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="onboard-footer">
+    <button class="btn-full" id="continueBtn" onclick="startScanner()" disabled>Continue</button>
+    <p class="onboard-note">You can update this anytime in Settings</p>
+  </div>
+</div>
+
+<!-- ── SCANNER ── -->
+<div class="screen" id="scanner">
+  <video id="cameraFeed" autoplay playsinline muted></video>
+
+  <div class="cam-error" id="camError">
+    <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+    <h3>Camera access needed</h3>
+    <p>Allow camera access in your browser settings, then reload the page to continue.</p>
+  </div>
+
+  <div class="scanner-ui">
+    <div class="scanner-topbar">
+      <div class="scanner-logo">Siftr<span>.</span></div>
+      <div class="profile-pill">
+        <div class="profile-dot"></div>
+        <span id="profileLabel">—</span>
+      </div>
+    </div>
+
+    <div class="viewfinder">
+      <div class="vf-corner tl"></div><div class="vf-corner tr"></div>
+      <div class="vf-corner bl"></div><div class="vf-corner br"></div>
+      <div class="scan-line"></div>
+      <div class="scan-hint">Point at a shelf and tap capture</div>
+    </div>
+
+    <div class="scanner-bottom">
+      <div class="scanner-bottom-row">
+        <div class="scanner-side-btn" onclick="goTo('onboarding')" title="Profile">
+          <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        </div>
+        <button class="capture-btn" id="captureBtn" onclick="captureShelf()"></button>
+        <div class="scanner-side-btn" title="Search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+      </div>
+      <div class="capture-label">Tap to scan</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESULTS ── -->
+<div class="screen" id="results">
+  <canvas id="frozenFrame"></canvas>
+  <div class="bbox-layer" id="bboxLayer"></div>
+
+  <div class="results-ui">
+    <div class="results-topbar">
+      <div class="results-logo">Siftr<span>.</span></div>
+      <div class="results-summary">
+        <div class="summary-chip safe">✓ <span id="safeCount">0</span></div>
+        <div class="summary-chip avoid">✕ <span id="avoidCount">0</span></div>
+        <div class="summary-chip amber">⚠ <span id="amberCount">0</span></div>
+      </div>
+    </div>
+    <div class="tap-hint">Tap any product for details</div>
+    <div class="results-bottom">
+      <button class="rescan-btn" onclick="rescan()">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 100-5.51"/></svg>
+        Scan Again
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PRODUCT SHEET ── -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
+  <div class="product-sheet" id="productSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="verdict-banner" id="sheetVerdict">
+        <div class="verdict-icon" id="sheetVerdictIcon"></div>
+        <div class="verdict-text">
+          <strong id="sheetVerdictTitle"></strong>
+          <span id="sheetVerdictSub"></span>
+        </div>
+      </div>
+      <div class="product-name-row">
+        <div class="product-img-box">
+          <!-- product icon SVG -->
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        </div>
+        <div>
+          <div class="product-brand" id="sheetBrand"></div>
+          <div class="product-title" id="sheetName"></div>
+          <div class="product-subtitle" id="sheetSub"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-divider"></div>
+    <div class="sheet-section">
+      <div class="sheet-section-title">Allergen Status</div>
+      <div class="allergen-flags" id="sheetAllergens"></div>
+    </div>
+
+    <div class="sheet-divider"></div>
+    <div class="sheet-section">
+      <div class="sheet-section-title">Ingredients</div>
+      <div class="ingredients-text" id="sheetIngredients"></div>
+    </div>
+
+    <div class="sheet-divider"></div>
+    <div class="sheet-section">
+      <div class="sheet-section-title">Nutrition per serving</div>
+      <table class="nutrition-table" id="sheetNutrition"></table>
+    </div>
+
+    <div class="sheet-close-wrap">
+      <button class="btn-full" onclick="document.getElementById('sheetOverlay').classList.remove('open')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROCESSING ── -->
+<div class="processing-overlay" id="processingOverlay">
+  <div class="processing-ring"></div>
+  <div class="processing-label">Analysing shelf</div>
+  <div class="processing-sub">Checking your dietary profile</div>
+</div>
+
+<script>
+// ── STATE ──
+let selectedRestrictions = new Set();
+let cameraStream = null;
+
+// ── SCREEN NAV ──
+function goTo(id) {
+  const current = document.querySelector('.screen.active');
+  if (current) {
+    current.classList.remove('visible');
+    setTimeout(() => current.classList.remove('active'), 350);
+  }
+  setTimeout(() => {
+    const next = document.getElementById(id);
+    next.classList.add('active');
+    requestAnimationFrame(() => requestAnimationFrame(() => next.classList.add('visible')));
+  }, 200);
+}
+
+// splash → onboarding
+setTimeout(() => goTo('onboarding'), 1800);
+
+// ── CHIP TOGGLE ──
+function toggleChip(el) {
+  el.classList.toggle('selected');
+  const id = el.dataset.id;
+  selectedRestrictions[el.classList.contains('selected') ? 'add' : 'delete'](id);
+  document.getElementById('continueBtn').disabled = selectedRestrictions.size === 0;
+}
+
+// ── START SCANNER ──
+async function startScanner() {
+  const labels = {
+    gluten:'Gluten Free', nuts:'Nut Free', dairy:'Dairy Free', egg:'Egg Free',
+    soy:'Soy Free', lowsugar:'Low Sugar', vegan:'Vegan',
+    vegetarian:'Vegetarian', halal:'Halal', keto:'Keto'
+  };
+  const pill = Array.from(selectedRestrictions).slice(0,2).map(r => labels[r] || r).join(' · ');
+  document.getElementById('profileLabel').textContent = pill;
+
+  goTo('scanner');
+
+  setTimeout(async () => {
+    try {
+      // Try rear camera first (mobile), fall back to any camera (desktop)
+      let constraints = { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch(e) {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+      const v = document.getElementById('cameraFeed');
+      v.srcObject = cameraStream;
+    } catch(e) {
+      document.getElementById('camError').classList.add('show');
+    }
+  }, 400);
+}
+
+// ── CAPTURE ──
+function captureShelf() {
+  const btn = document.getElementById('captureBtn');
+  btn.style.transform = 'scale(0.88)';
+  setTimeout(() => btn.style.transform = '', 150);
+
+  const flash = document.createElement('div');
+  flash.className = 'capture-flash';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 500);
+
+  // freeze frame
+  const video = document.getElementById('cameraFeed');
+  const canvas = document.getElementById('frozenFrame');
+  const w = video.videoWidth  || window.innerWidth;
+  const h = video.videoHeight || window.innerHeight;
+  canvas.width = w; canvas.height = h;
+  if (video.readyState >= 2) {
+    canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+  }
+
+  // stop tracks
+  if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+
+  const proc = document.getElementById('processingOverlay');
+  proc.classList.add('show');
+  setTimeout(() => { proc.classList.remove('show'); showResults(); }, 2200);
+}
+
+// ── PRODUCTS ──
+const PRODUCTS = [
+  {
+    id:'p1', status:'avoid',
+    pos:{l:2,t:20,w:17,h:34},
+    brand:'Oreo', name:'Original Sandwich Cookies', sub:'154g · 14 cookies per pack',
+    verdict:'Not suitable', verdictSub:'Contains wheat flour (gluten)',
+    allergens:[
+      {label:'Gluten',type:'present'},{label:'Dairy',type:'present'},
+      {label:'Nuts',type:'absent'},{label:'Eggs',type:'absent'}
+    ],
+    ingredients:`Sugar, <mark>Enriched Flour (Wheat Flour</mark>, Niacin, Reduced Iron, Thiamine Mononitrate), Palm and Canola Oil, Cocoa processed with alkali, High Fructose Corn Syrup, <mark>Whey (Milk)</mark>, Leavening, Salt, Soy Lecithin, Vanillin.`,
+    nutrition:[['Serving size','3 cookies (34g)'],['Calories','160'],['Total Fat','7g'],['Total Carbohydrates','25g'],['  of which Sugars','14g'],['Protein','2g'],['Sodium','135mg']]
+  },
+  {
+    id:'p2', status:'avoid',
+    pos:{l:20,t:18,w:18,h:36},
+    brand:"Chips Ahoy!", name:'Chewy Chocolate Chip', sub:'269g · Family pack',
+    verdict:'Not suitable', verdictSub:'Contains wheat flour',
+    allergens:[
+      {label:'Gluten',type:'present'},{label:'Dairy',type:'present'},
+      {label:'Nuts',type:'warning'},{label:'Eggs',type:'present'}
+    ],
+    ingredients:`<mark>Enriched Flour (Wheat Flour</mark>, Niacin, Reduced Iron), Semisweet Chocolate Chips (Sugar, Chocolate, Cocoa Butter, <mark>Milkfat</mark>, Soy Lecithin), Sugar, Vegetable Oil, <mark>Eggs</mark>, Leavening, Salt. <mark>May contain peanuts and tree nuts.</mark>`,
+    nutrition:[['Serving size','3 cookies (36g)'],['Calories','170'],['Total Fat','8g'],['Total Carbohydrates','24g'],['  of which Sugars','11g'],['Protein','2g'],['Sodium','110mg']]
+  },
+  {
+    id:'p3', status:'safe',
+    pos:{l:39,t:19,w:19,h:35},
+    brand:"Enjoy Life Foods", name:'Soft-Baked Snickerdoodle', sub:'170g · Free from 14 allergens',
+    verdict:'Safe to eat', verdictSub:'Certified gluten-free — no restricted ingredients',
+    allergens:[
+      {label:'Gluten',type:'absent'},{label:'Dairy',type:'absent'},
+      {label:'Nuts',type:'absent'},{label:'Eggs',type:'absent'}
+    ],
+    ingredients:`Brown Rice Flour, Palm Shortening, Sugar, Tapioca Starch, Unsweetened Apple Sauce, Potato Starch, Vanilla Extract, Baking Soda, Salt, Cinnamon. Certified Gluten-Free. Made in a dedicated allergen-free facility.`,
+    nutrition:[['Serving size','2 cookies (28g)'],['Calories','110'],['Total Fat','4.5g'],['Total Carbohydrates','17g'],['  of which Sugars','8g'],['Protein','1g'],['Sodium','70mg']]
+  },
+  {
+    id:'p4', status:'amber',
+    pos:{l:59,t:20,w:18,h:34},
+    brand:"Simple Mills", name:'Almond Flour Choc Chip', sub:'156g · Grain-free',
+    verdict:'Caution — may contain', verdictSub:'Manufactured in a facility that also processes wheat',
+    allergens:[
+      {label:'Gluten',type:'warning'},{label:'Dairy',type:'absent'},
+      {label:'Tree Nuts',type:'present'},{label:'Eggs',type:'present'}
+    ],
+    ingredients:`Almond Flour, Tapioca Starch, Coconut Sugar, Chocolate Chips (Cane Sugar, Chocolate Liquor, Cocoa Butter, Vanilla), Coconut Oil, Eggs, Vanilla Extract, Baking Soda. <mark>Manufactured in a facility that also processes wheat.</mark>`,
+    nutrition:[['Serving size','3 cookies (30g)'],['Calories','130'],['Total Fat','7g'],['Total Carbohydrates','15g'],['  of which Sugars','8g'],['Protein','3g'],['Sodium','85mg']]
+  },
+  {
+    id:'p5', status:'safe',
+    pos:{l:78,t:21,w:18,h:33},
+    brand:"Partake Foods", name:'Soft-Baked Birthday Cake', sub:'156g · Vegan · Top-9 allergen free',
+    verdict:'Safe to eat', verdictSub:'Gluten-free certified — all restrictions clear',
+    allergens:[
+      {label:'Gluten',type:'absent'},{label:'Dairy',type:'absent'},
+      {label:'Nuts',type:'absent'},{label:'Eggs',type:'absent'}
+    ],
+    ingredients:`Brown Rice Flour, Certified Gluten-Free Oat Flour, Coconut Sugar, Coconut Oil, Rainbow Sprinkles (Sugar, Tapioca Starch, Natural Colors), Unsweetened Apple Sauce, Vanilla Extract, Baking Soda, Salt.`,
+    nutrition:[['Serving size','2 cookies (28g)'],['Calories','120'],['Total Fat','5g'],['Total Carbohydrates','18g'],['  of which Sugars','9g'],['Protein','1g'],['Sodium','60mg']]
+  },
+  {
+    id:'p6', status:'avoid',
+    pos:{l:3,t:58,w:17,h:28},
+    brand:"Pepperidge Farm", name:'Milano Dark Chocolate', sub:'200g · 15 cookies',
+    verdict:'Not suitable', verdictSub:'Contains enriched wheat flour',
+    allergens:[
+      {label:'Gluten',type:'present'},{label:'Dairy',type:'present'},
+      {label:'Nuts',type:'absent'},{label:'Eggs',type:'present'}
+    ],
+    ingredients:`<mark>Enriched Wheat Flour</mark>, Dark Chocolate (Sugar, Chocolate, Cocoa Butter, Soy Lecithin), Sugar, <mark>Butter</mark>, <mark>Eggs</mark>, Corn Starch, Salt, Vanilla Extract.`,
+    nutrition:[['Serving size','3 cookies (33g)'],['Calories','170'],['Total Fat','9g'],['Total Carbohydrates','21g'],['  of which Sugars','12g'],['Protein','2g'],['Sodium','55mg']]
+  },
+  {
+    id:'p7', status:'safe',
+    pos:{l:60,t:57,w:18,h:29},
+    brand:"Kind", name:'GF Oat Clusters Dark Choc', sub:'312g · Resealable',
+    verdict:'Safe to eat', verdictSub:'GFCO certified gluten-free oats',
+    allergens:[
+      {label:'Gluten',type:'absent'},{label:'Dairy',type:'absent'},
+      {label:'Tree Nuts',type:'present'},{label:'Eggs',type:'absent'}
+    ],
+    ingredients:`Gluten-Free Certified Oats, Dark Chocolate (Cocoa, Sugar, Cocoa Butter, Vanilla), Almonds, Honey, Rice Flour, Vegetable Glycerin, Sea Salt. Certified Gluten-Free by GFCO.`,
+    nutrition:[['Serving size','1/3 cup (30g)'],['Calories','130'],['Total Fat','5g'],['Total Carbohydrates','20g'],['  of which Sugars','8g'],['Protein','3g'],['Sodium','40mg']]
+  }
+];
+
+// ── SHOW RESULTS ──
+function showResults() {
+  goTo('results');
+  const layer = document.getElementById('bboxLayer');
+  layer.innerHTML = '';
+  let safe=0, avoid=0, amber=0;
+
+  PRODUCTS.forEach((p, i) => {
+    if (p.status==='safe') safe++;
+    else if (p.status==='avoid') avoid++;
+    else amber++;
+
+    const el = document.createElement('div');
+    el.className = `bbox ${p.status}`;
+    el.style.cssText = `left:${p.pos.l}%;top:${p.pos.t}%;width:${p.pos.w}%;height:${p.pos.h}%;animation-delay:${i*0.07}s`;
+
+    const icon   = p.status==='safe' ? '✓' : p.status==='avoid' ? '✕' : '⚠';
+    const lbl    = p.status==='safe' ? 'Safe' : p.status==='avoid' ? 'Avoid' : 'Caution';
+    el.innerHTML = `<div class="bbox-label">${icon} ${lbl}</div><div class="bbox-name">${p.brand}</div>`;
+    el.addEventListener('click', () => openSheet(p));
+    layer.appendChild(el);
+  });
+
+  document.getElementById('safeCount').textContent  = safe;
+  document.getElementById('avoidCount').textContent = avoid;
+  document.getElementById('amberCount').textContent = amber;
+}
+
+// ── OPEN SHEET ──
+const ALLERGEN_ICONS = {
+  Gluten:     `<svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 3c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm4 12H8v-1c0-2 2.7-3 4-3s4 1 4 3v1z"/></svg>`,
+  Dairy:      `<svg viewBox="0 0 24 24"><path d="M8 2h8l2 6v12a1 1 0 01-1 1H7a1 1 0 01-1-1V8l2-6z"/><path d="M6 8h12"/></svg>`,
+  Nuts:       `<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="7" ry="9"/><path d="M12 3v18M5.5 8h13M5.5 16h13"/></svg>`,
+  'Tree Nuts':`<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="7" ry="9"/><path d="M12 3v18M5.5 8h13M5.5 16h13"/></svg>`,
+  Eggs:       `<svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 7 5 12a7 7 0 0014 0c0-5-3-10-7-10z"/></svg>`,
+  Soy:        `<svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 19.72A2 2 0 005.53 22h12.91a2 2 0 001.74-2.97C17.55 14.89 17 8 17 8z"/></svg>`,
+};
+
+function openSheet(p) {
+  const overlay = document.getElementById('sheetOverlay');
+  const verdict = document.getElementById('sheetVerdict');
+  const icon    = document.getElementById('sheetVerdictIcon');
+
+  verdict.className = 'verdict-banner ' + p.status;
+
+  // verdict icon SVG
+  const icoSvg = p.status==='safe'
+    ? `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`
+    : p.status==='avoid'
+    ? `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`
+    : `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+  icon.innerHTML = icoSvg;
+
+  document.getElementById('sheetVerdictTitle').textContent = p.verdict;
+  document.getElementById('sheetVerdictSub').textContent   = p.verdictSub;
+  document.getElementById('sheetBrand').textContent        = p.brand;
+  document.getElementById('sheetName').textContent         = p.name;
+  document.getElementById('sheetSub').textContent          = p.sub;
+
+  // allergens
+  document.getElementById('sheetAllergens').innerHTML = p.allergens.map(a => {
+    const ico = ALLERGEN_ICONS[a.label] || `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>`;
+    const note = a.type==='warning' ? ' (may contain)' : a.type==='present' ? ' — present' : ' — free';
+    return `<span class="allergen-flag ${a.type}">${ico}${a.label}${note}</span>`;
+  }).join('');
+
+  document.getElementById('sheetIngredients').innerHTML = p.ingredients;
+
+  document.getElementById('sheetNutrition').innerHTML = p.nutrition.map(([k,v]) =>
+    `<tr><td>${k}</td><td>${v}</td></tr>`
+  ).join('');
+
+  // scroll sheet to top
+  document.getElementById('productSheet').scrollTop = 0;
+  overlay.classList.add('open');
+}
+
+function closeSheet(e) {
+  if (e && e.target !== document.getElementById('sheetOverlay')) return;
+  document.getElementById('sheetOverlay').classList.remove('open');
+}
+
+// ── RESCAN ──
+async function rescan() {
+  goTo('scanner');
+  setTimeout(async () => {
+    try {
+      let constraints = { video: { facingMode: { ideal:'environment' }, width:{ideal:1920}, height:{ideal:1080} } };
+      try { cameraStream = await navigator.mediaDevices.getUserMedia(constraints); }
+      catch(e) { cameraStream = await navigator.mediaDevices.getUserMedia({ video: true }); }
+      document.getElementById('cameraFeed').srcObject = cameraStream;
+    } catch(e) {
+      document.getElementById('camError').classList.add('show');
+    }
+  }, 400);
+}
+</script>
+</body>
+</html>
